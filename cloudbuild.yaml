@@ -9,3 +9,5 @@ steps:
   - --source=./simple_http_function/
   - --trigger-http
   - --runtime=python312
+options:
+  logging: CLOUD_LOGGING_ONLY
