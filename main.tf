@@ -70,19 +70,6 @@ resource "google_service_account" "build_account" {
   description = "Cloudbuild account"
 }
 
-resource "google_cloudbuild_trigger" "build-trigger" {
-  location = "us-central1"
-
-  repository_event_config {
-    repository = "ktvng-gcp-sandbox"
-    push {
-      branch = "main"
-    }
-  }
-
-  filename = "cloudbuild.yaml"
-}
-
 output "function_uri" {
   value = google_cloudfunctions2_function.simple_http_function.service_config[0].uri
 }
