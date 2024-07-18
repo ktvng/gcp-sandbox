@@ -54,6 +54,7 @@ resource "google_cloudfunctions2_function" "simple_http_function" {
   service_config {
     timeout_seconds = 60
     max_instance_count = 1
+    service_account_email = google_service_account.simple-http-function-account.email
   }
 }
 
@@ -62,6 +63,11 @@ resource "google_cloud_run_service_iam_member" "member" {
   service  = google_cloudfunctions2_function.simple_http_function.name
   role     = "roles/run.invoker"
   member   = "user:k.tang1618@gmail.com"
+}
+
+resource "google_service_account" "simple-http-function-account" {
+  account_id   = "simple-http-function-account"
+  display_name = "simple-http-function-account"
 }
 
 resource "google_service_account" "build_account" {
