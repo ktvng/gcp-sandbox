@@ -4,6 +4,7 @@ import requests
 from google.auth import compute_engine
 import google.auth.transport.requests
 import uuid
+import time
 
 @functions_framework.http
 def entry(request: Request):
@@ -18,6 +19,7 @@ def entry(request: Request):
     token = get_access_token(url)
     r = requests.post(url, json={"id": str(uuid.uuid4())}, headers={"Authorization": f"Bearer {token}"})
     print(r)
+    time.sleep(10)
     return "success with v6\n"
 
 def get_access_token(url):
