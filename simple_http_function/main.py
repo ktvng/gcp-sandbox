@@ -1,7 +1,7 @@
 import functions_framework
 from flask import Request
 import requests
-from google.auth import impersonated_credentials
+from google.auth import compute_engine
 import google.auth.transport.requests
 
 @functions_framework.http
@@ -14,13 +14,15 @@ def entry(request: Request):
         print(f"did not find 'id' in body {request.json}")
 
 
-    token = get_access_token()
+    token = get_access_token(url)
     r = requests.post(url, json={"id": "123"}, headers={"Authorization": f"Bearer {token}"})
     print(r)
     return "success with v6\n"
 
-def get_access_token():
-    credentials, project_id = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
-    auth_req_session = google.auth.transport.requests.Request()
-    credentials.refresh(auth_req_session)
+def get_access_token(url):
+    request = google.auth.transport.requests.Request()
+    credentials = compute_engine.IDTokenCredentials(
+        request=request, target_audience=url, use_metadata_identity_endpoint=True)
+
+    credentials.refresh(request)
     return credentials.token
