@@ -2,7 +2,7 @@ import functions_framework
 from flask import Request
 import requests
 from google.auth import impersonated_credentials
-import google.auth
+import google.auth.transport.requests
 
 @functions_framework.http
 def entry(request: Request):
