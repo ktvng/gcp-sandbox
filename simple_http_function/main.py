@@ -5,7 +5,7 @@ from flask import Request
 def entry(request: Request):
     print("hello")
     try:
-        print(request.args['id'])
+        print(request.json['id'])
     except:
-        print("did not find 'id' in args")
+        print("did not find 'id' in body")
     return "success with v6\n"
