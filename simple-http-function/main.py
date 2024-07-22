@@ -46,8 +46,8 @@ def queue_task(url):
         http_request=tasks_v2.HttpRequest(
             http_method=tasks_v2.HttpMethod.POST,
             url=url,
-            oidc_token=get_access_token(url),
-            body="{id: 'hello'}",
+            #oidc_token=get_access_token(url),
+            body="hello",
         ),
     )
     return client.create_task(
