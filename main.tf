@@ -111,6 +111,11 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
+resource "google_cloud_tasks_queue" "task-queue" {
+  location = "us-west1"
+  name = "test-task-queue"
+}
+
 output "function-uris" {
   value = [
     for k, v in var.funkets : google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
