@@ -4,12 +4,17 @@ import requests
 from google.auth import compute_engine
 import google.auth.transport.requests
 import uuid
-from google.cloud import tasks_v2
+from google.cloud import tasks_v2beta3 as tasks_v2
 import traceback
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
 queue = "test-task-queue"
+
+_request = google.auth.transport.requests.Request()
+_credentials = compute_engine.IDTokenCredentials(
+    request=_request, use_metadata_identity_endpoint=True)
+service_account_email = _credentials.service_account_email
 
 @functions_framework.http
 def entry(request: Request):
@@ -46,8 +51,11 @@ def queue_task(url):
         http_request=tasks_v2.HttpRequest(
             http_method=tasks_v2.HttpMethod.POST,
             url=url,
-            #oidc_token=get_access_token(url),
-            body="hello",
+            oidc_token=tasks_v2.OidcToken(
+                service_account_email=service_account_email,
+                audience=url,
+            ),
+            body="hellos",
         ),
     )
     return client.create_task(
