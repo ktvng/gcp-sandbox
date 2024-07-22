@@ -16,6 +16,7 @@ provider "google" {
   project = var.project_id
 }
 
+// The shared builds bucket
 resource "google_storage_bucket" "bucket" {
   name     = "builds-bucket-${var.project_id}"
   location = "US"
@@ -23,104 +24,95 @@ resource "google_storage_bucket" "bucket" {
   force_destroy = true
 }
 
-data "archive_file" "simple_http_function_zip" {
-  type        = "zip"
-  output_path = "./builds/simple_http_function.zip"
-  source_dir  = "simple_http_function/"
-}
-
-resource "google_storage_bucket_object" "simple_http_function_code" {
-  name   = "simple_http_function_code.zip"
-  bucket = google_storage_bucket.bucket.name
-  source = data.archive_file.simple_http_function_zip.output_path
-}
-
-resource "google_cloudfunctions2_function" "simple_http_function" {
-  name = "simple-http-function"
-  location = "us-west1"
-  build_config {
-    runtime = "python312"
-    entry_point = "entry"
-    source {
-      storage_source {
-        bucket = google_storage_bucket.bucket.name
-        object = google_storage_bucket_object.simple_http_function_code.name
-      }
-    }
-  }
-  service_config {
-    timeout_seconds = 60
-    max_instance_count = 1
-    service_account_email = google_service_account.simple-http-function-account.email
-  }
-}
-
-resource "google_cloud_run_service_iam_member" "member" {
-  location = google_cloudfunctions2_function.simple_http_function.location
-  service  = google_cloudfunctions2_function.simple_http_function.name
-  role     = "roles/run.invoker"
-  member   = "user:k.tang1618@gmail.com"
-}
-
-resource "google_service_account" "simple-http-function-account" {
-  account_id   = "simple-http-function-account"
-  display_name = "simple-http-function-account"
-}
-
+// The shared build account
 resource "google_service_account" "build_account" {
   account_id = "build-account"
   display_name = "build-account"
   description = "Cloudbuild account"
 }
 
-data "archive_file" "secondary_function_zip" {
-  type        = "zip"
-  output_path = "./builds/secondary_function.zip"
-  source_dir  = "secondary_function/"
+// All funkets
+variable "funkets" {
+  description = "All microservices following the queue + cloud function pattern"
+  type = map(any)
+
+  default = {
+    simple-http-function = {
+      name = "simple-http-function"
+    },
+    secondary-function = {
+      name = "secondary-function"
+    }
+  }
 }
 
-resource "google_storage_bucket_object" "secondary_function_code" {
-  name   = "secondary_function_code.zip"
+variable "routes" {
+  description = "Map of which funkets can invoke others"
+  type = map(any)
+  default = {
+    simple-http-function = "secondary-function"
+  }
+}
+
+data "archive_file" "local-code" {
+  for_each = var.funkets
+  type = "zip"
+  source_dir = "./${each.value.name}/"
+  output_path = "./builds/${each.value.name}.zip"
+}
+
+resource "google_storage_bucket_object" "cloud-code" {
+  for_each = var.funkets
+  name = "${each.value.name}.zip"
   bucket = google_storage_bucket.bucket.name
-  source = data.archive_file.secondary_function_zip.output_path
+  source = data.archive_file.local-code[each.key].output_path
 }
 
-resource "google_cloudfunctions2_function" "secondary_function" {
-  name = "secondary-function"
+resource "google_service_account" "function-account" {
+  for_each = var.funkets
+  account_id = "${each.value.name}-account"
+  display_name = "${each.value.name}-account"
+}
+
+resource "google_cloudfunctions2_function" "cloud-function" {
+  for_each = var.funkets
+  name = each.value.name
   location = "us-west1"
+
   build_config {
     runtime = "python312"
     entry_point = "entry"
     source {
       storage_source {
         bucket = google_storage_bucket.bucket.name
-        object = google_storage_bucket_object.secondary_function_code.name
+        object = google_storage_bucket_object.cloud-code[each.key].name
       }
     }
   }
   service_config {
     timeout_seconds = 60
     max_instance_count = 1
-    service_account_email = google_service_account.secondary-function-account.email
+    service_account_email = google_service_account.function-account[each.key].email
   }
 }
 
-resource "google_service_account" "secondary-function-account" {
-  account_id   = "secondary-function-account"
-  display_name = "secondary-function-account"
-}
-
-resource "google_cloud_run_service_iam_member" "secondary-function-invoker" {
-  location = google_cloudfunctions2_function.secondary_function.location
-  service  = google_cloudfunctions2_function.secondary_function.name
+resource "google_cloud_run_service_iam_member" "member" {
+  location = google_cloudfunctions2_function.cloud-function["simple-http-function"].location
+  service = google_cloudfunctions2_function.cloud-function["simple-http-function"].name
   role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.simple-http-function-account.email}"
+  member   = "user:k.tang1618@gmail.com"
 }
 
-output "function_uri" {
-  value = google_cloudfunctions2_function.simple_http_function.service_config[0].uri
+resource "google_cloud_run_service_iam_member" "invoker" {
+  for_each = var.routes
+  location = google_cloudfunctions2_function.cloud-function[each.value].location
+  service  = google_cloudfunctions2_function.cloud-function[each.value].name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
-output "secondary-function-uri" {
-  value = google_cloudfunctions2_function.secondary_function.service_config[0].uri
+output "function-uris" {
+  value = [
+    for k, v in var.funkets : google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
+  ]
 }
