@@ -1,0 +1,16 @@
+{
+  "function-uris": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "secondary-function": "string",
+        "simple-http-function": "string"
+      }
+    ],
+    "value": {
+      "secondary-function": "https://secondary-function-tidc3mgixq-uw.a.run.app",
+      "simple-http-function": "https://simple-http-function-tidc3mgixq-uw.a.run.app"
+    }
+  }
+}

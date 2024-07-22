@@ -36,6 +36,7 @@ def get_access_token(url):
         request=request, target_audience=url, use_metadata_identity_endpoint=True)
 
     credentials.refresh(request)
+    print("USING SERVICE ACCOUNT", credentials.service_account_email)
     return credentials.token
 
 def queue_task(url):
@@ -44,10 +45,7 @@ def queue_task(url):
         http_request=tasks_v2.HttpRequest(
             http_method=tasks_v2.HttpMethod.POST,
             url=url,
-            oidc_token=tasks_v2.OidcToken(
-                service_account_email="simple-http-function-account@moonlit-web-429604-s7.iam.gserviceaccount.com",
-                audience=url,
-            ),
+            oidc_token=get_access_token(url),
             body="{id: 'hello'}",
         ),
     )

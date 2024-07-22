@@ -95,7 +95,6 @@ resource "google_cloudfunctions2_function" "cloud-function" {
     service_account_email = google_service_account.function-account[each.key].email
   }
 }
-
 resource "google_cloud_run_service_iam_member" "member" {
   location = google_cloudfunctions2_function.cloud-function["simple-http-function"].location
   service = google_cloudfunctions2_function.cloud-function["simple-http-function"].name
@@ -111,13 +110,22 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
+resource "google_cloud_tasks_queue_iam_member" "creator" {
+  for_each = var.routes
+  location = google_cloudfunctions2_function.cloud-function[each.key].location
+  name = "test-task-queue"
+  role = "roles/cloudtasks.enqueuer"
+  member = "serviceAccount:${google_service_account.function-account[each.key].email}"
+}
+
 resource "google_cloud_tasks_queue" "task-queue" {
   location = "us-west1"
   name = "test-task-queue"
 }
 
 output "function-uris" {
-  value = [
-    for k, v in var.funkets : google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
-  ]
+  value = {
+    for k, v in var.funkets :
+      k => google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
+  }
 }
