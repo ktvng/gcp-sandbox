@@ -129,6 +129,14 @@ resource "google_cloud_tasks_queue" "function-queue" {
   name = "${each.value.name}-queue"
 }
 
+resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
+  for_each = var.routes
+  location = google_cloudfunctions2_function.cloud-function[each.key].location
+  name = google_cloud_tasks_queue.function-queue[each.value].name
+  role = "roles/cloudtasks.enqueuer"
+  member = "serviceAccount:${google_service_account.function-account[each.key].email}"
+}
+
 resource "google_cloud_tasks_queue" "task-queue" {
   location = "us-west1"
   name = "test-task-queue"

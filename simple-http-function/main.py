@@ -13,7 +13,7 @@ queue = "test-task-queue"
 
 _request = google.auth.transport.requests.Request()
 _credentials = compute_engine.IDTokenCredentials(
-    request=_request, use_metadata_identity_endpoint=True)
+    request=_request, target_audience="www.google.com", use_metadata_identity_endpoint=True)
 service_account_email = _credentials.service_account_email
 
 @functions_framework.http
