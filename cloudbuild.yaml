@@ -6,7 +6,17 @@ steps:
   - deploy
   - simple-http-function
   - --region=us-west1
-  - --source=./simple_http_function/
+  - --source=./simple-http-function/
+  - --trigger-http
+  - --runtime=python312
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - secondary-function
+  - --region=us-west1
+  - --source=./secondary-function/
   - --trigger-http
   - --runtime=python312
 options:
