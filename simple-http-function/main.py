@@ -5,6 +5,7 @@ from google.auth import compute_engine
 import google.auth.transport.requests
 import uuid
 from google.cloud import tasks_v2
+import traceback
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
@@ -22,7 +23,7 @@ def entry(request: Request):
     try:
         queue_task(url)
     except Exception as e:
-        print(f"could not push to queue with error {e}")
+        print(f"could not push to queue with error {e} {traceback.format_exc()}")
 
     token = get_access_token(url)
     r = requests.post(url, json={"id": str(uuid.uuid4())}, headers={"Authorization": f"Bearer {token}"})
@@ -42,12 +43,12 @@ def get_access_token(url):
 def queue_task(url):
     client = tasks_v2.CloudTasksClient()
     task = tasks_v2.Task(
-        http_request=tasks_v2.HttpRequest({
-            "http_method": tasks_v2.HttpMethod.POST,
-            "url": url,
-            "oidc_token": get_access_token(url),
-            "body": "{id: 'hello'}",
-        }),
+        http_request=tasks_v2.HttpRequest(
+            http_method=tasks_v2.HttpMethod.POST,
+            url=url,
+            oidc_token=get_access_token(url),
+            body="{id: 'hello'}",
+        ),
     )
     return client.create_task(
         tasks_v2.CreateTaskRequest(

@@ -12,6 +12,11 @@ variable "project_id" {
   default = "moonlit-web-429604-s7"
 }
 
+variable "location" {
+  type = string
+  default = "us-west1"
+}
+
 provider "google" {
   project = var.project_id
 }
@@ -77,7 +82,7 @@ resource "google_service_account" "function-account" {
 resource "google_cloudfunctions2_function" "cloud-function" {
   for_each = var.funkets
   name = each.value.name
-  location = "us-west1"
+  location = var.location
 
   build_config {
     runtime = "python312"
@@ -118,6 +123,12 @@ resource "google_cloud_tasks_queue_iam_member" "creator" {
   member = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
+resource "google_cloud_tasks_queue" "function-queue" {
+  for_each = var.funkets
+  location = var.location
+  name = "${each.value.name}-queue"
+}
+
 resource "google_cloud_tasks_queue" "task-queue" {
   location = "us-west1"
   name = "test-task-queue"
@@ -127,5 +138,12 @@ output "function-uris" {
   value = {
     for k, v in var.funkets :
       k => google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
+  }
+}
+
+output "queue-names" {
+  value = {
+    for k, v in var.funkets :
+      k => google_cloud_tasks_queue.function-queue[k].name
   }
 }
