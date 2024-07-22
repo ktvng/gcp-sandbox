@@ -42,12 +42,12 @@ def get_access_token(url):
 def queue_task(url):
     client = tasks_v2.CloudTasksClient()
     task = tasks_v2.Task(
-        http_request=tasks_v2.HttpRequest(
-            http_method=tasks_v2.HttpMethod.POST,
-            url=url,
-            oidc_token=get_access_token(url),
-            body="{id: 'hello'}",
-        ),
+        http_request=tasks_v2.HttpRequest({
+            "http_method": tasks_v2.HttpMethod.POST,
+            "url": url,
+            "oidc_token": get_access_token(url),
+            "body": "{id: 'hello'}",
+        }),
     )
     return client.create_task(
         tasks_v2.CreateTaskRequest(
