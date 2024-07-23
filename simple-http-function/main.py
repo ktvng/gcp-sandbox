@@ -47,6 +47,8 @@ def get_access_token(url):
 
 def queue_task(url):
     client = tasks_v2.CloudTasksClient()
+    print(client._transport._credentials.service_account_email)
+    print(client._transport._credentials.account)
     task = tasks_v2.Task(
         http_request=tasks_v2.HttpRequest(
             http_method=tasks_v2.HttpMethod.POST,
