@@ -12,6 +12,10 @@ variable "project_id" {
   default = "moonlit-web-429604-s7"
 }
 
+resource "random_id" "differentiator" {
+  byte_length = 8
+}
+
 variable "location" {
   type = string
   default = "us-west1"
@@ -118,7 +122,7 @@ resource "google_cloud_run_service_iam_member" "invoker" {
 resource "google_cloud_tasks_queue_iam_member" "creator" {
   for_each = var.routes
   location = google_cloudfunctions2_function.cloud-function[each.key].location
-  name = "test-task-queue"
+  name = "test-task-queue2"
   role = "roles/cloudtasks.enqueuer"
   member = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
@@ -126,7 +130,8 @@ resource "google_cloud_tasks_queue_iam_member" "creator" {
 resource "google_cloud_tasks_queue" "function-queue" {
   for_each = var.funkets
   location = var.location
-  name = "${each.value.name}-queue"
+  name = "${each.value.name}-queue-${random_id.differentiator.id}"
+  project = var.project_id
 }
 
 resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
@@ -139,7 +144,8 @@ resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
 
 resource "google_cloud_tasks_queue" "task-queue" {
   location = "us-west1"
-  name = "test-task-queue"
+  name = "test-task-queue2"
+  project = var.project_id
 }
 
 output "function-uris" {

@@ -9,7 +9,7 @@ import traceback
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
-queue = "test-task-queue"
+queue = "test-task-queue2"
 
 _request = google.auth.transport.requests.Request()
 _credentials = compute_engine.IDTokenCredentials(
