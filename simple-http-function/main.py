@@ -10,7 +10,7 @@ import json
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
-queue = "test-task-queue2"
+queue = "secondary-function-queue-zP296pb9dKc"
 
 _request = google.auth.transport.requests.Request()
 _credentials = compute_engine.IDTokenCredentials(
@@ -46,7 +46,7 @@ def get_access_token(url):
 
 def queue_task(url):
     client = tasks_v2.CloudTasksClient()
-    body = { "id": f"queue-{str(uuid.uuid4())}"}
+    body = { "id": f"queue2-{str(uuid.uuid4())}"}
     task = tasks_v2.Task(
         http_request=tasks_v2.HttpRequest(
             http_method=tasks_v2.HttpMethod.POST,
