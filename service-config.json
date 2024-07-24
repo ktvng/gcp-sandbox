@@ -1,0 +1,40 @@
+{
+  "service-config": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "deployment-hash": "string",
+        "functions": [
+          "object",
+          {
+            "secondary-function": "string",
+            "simple-http-function": "string"
+          }
+        ],
+        "location": "string",
+        "project-id": "string",
+        "queues": [
+          "object",
+          {
+            "secondary-function": "string",
+            "simple-http-function": "string"
+          }
+        ]
+      }
+    ],
+    "value": {
+      "deployment-hash": "zP296pb9dKc",
+      "functions": {
+        "secondary-function": "https://secondary-function-tidc3mgixq-uw.a.run.app",
+        "simple-http-function": "https://simple-http-function-tidc3mgixq-uw.a.run.app"
+      },
+      "location": "us-west1",
+      "project-id": "moonlit-web-429604-s7",
+      "queues": {
+        "secondary-function": "secondary-function-queue-zP296pb9dKc",
+        "simple-http-function": "simple-http-function-queue-zP296pb9dKc"
+      }
+    }
+  }
+}

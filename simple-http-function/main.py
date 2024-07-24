@@ -7,6 +7,7 @@ import uuid
 from google.cloud import tasks_v2beta3 as tasks_v2
 import traceback
 import json
+import common.networking
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
@@ -34,7 +35,13 @@ def entry(request: Request):
     r = requests.post(url, json={"id": str(uuid.uuid4())}, headers={"Authorization": f"Bearer {token}"})
     print(r)
     # time.sleep(10)
-    return "success with v15\n"
+
+    caller = common.networking.RemoteCall("../service-config.json")
+    caller.queue_task("secondary-function", body={
+        "name": "hello there"
+    })
+
+    return "success with v16\n"
 
 def get_access_token(url):
     request = google.auth.transport.requests.Request()

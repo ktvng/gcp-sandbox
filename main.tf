@@ -112,7 +112,8 @@ resource "google_cloudfunctions2_function" "cloud-function" {
   }
   service_config {
     timeout_seconds = 60
-    max_instance_count = 1
+    max_instance_count = 5
+    min_instance_count = 0
     service_account_email = google_service_account.function-account[each.key].email
   }
 }
@@ -139,14 +140,6 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
-resource "google_cloud_tasks_queue_iam_member" "creator" {
-  for_each = var.routes
-  location = google_cloudfunctions2_function.cloud-function[each.key].location
-  name = "test-task-queue2"
-  role = "roles/cloudtasks.enqueuer"
-  member = "serviceAccount:${google_service_account.function-account[each.key].email}"
-}
-
 resource "google_cloud_tasks_queue" "function-queue" {
   for_each = var.funkets
   location = var.location
@@ -162,22 +155,18 @@ resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
   member = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
-resource "google_cloud_tasks_queue" "task-queue" {
-  location = "us-west1"
-  name = "test-task-queue2"
-  project = var.project_id
-}
-
-output "function-uris" {
+output "service-config" {
   value = {
-    for k, v in var.funkets :
-      k => google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
-  }
-}
-
-output "queue-names" {
-  value = {
-    for k, v in var.funkets :
-      k => google_cloud_tasks_queue.function-queue[k].name
+    project-id = var.project_id
+    deployment-hash = random_id.differentiator.id
+    location = var.location
+    functions = {
+      for k, v in var.funkets:
+        k => google_cloudfunctions2_function.cloud-function[k].service_config[0].uri
+    }
+    queues = {
+      for k, v in var.funkets:
+        k => google_cloud_tasks_queue.function-queue[k].name
+    }
   }
 }
