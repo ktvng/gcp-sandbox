@@ -49,21 +49,35 @@ def queue_task(url):
     client = tasks_v2.CloudTasksClient()
     print(f"client email {client._transport._credentials.service_account_email}")
     print(f"client {client._transport._credentials}")
-    body = json.dumps({ "id": f"queue-{str(uuid.uuid4())}"})
-    task = {
-        'http_request': {
-            'http_method': tasks_v2.HttpMethod.POST,
-            'url': url,
-            'oidc_token': {
-                'service_account_email': service_account_email,
-                'audience': url,
-            },
-            'headers': {
-                'Content-Type': 'application/json',
-            },
-            'body': body,
-        }
-    }
+    body = { "id": f"queue-{str(uuid.uuid4())}"}
+    task = tasks_v2.Task(
+        http_request=tasks_v2.HttpRequest(
+            http_method=tasks_v2.HttpMethod.POST,
+            url=url,
+            headers={"Content-type": "application/json"},
+            body=json.dumps(body).encode(),
+            oidc_token=tasks_v2.OidcToken(
+                service_account_email=service_account_email,
+                audience=url,
+            ),
+        ),
+        name="hello"
+    )
+
+    # task = {
+    #     'http_request': {
+    #         'http_method': tasks_v2.HttpMethod.POST,
+    #         'url': url,
+    #         'oidc_token': {
+    #             'service_account_email': service_account_email,
+    #             'audience': url,
+    #         },
+    #         'headers': {
+    #             'Content-Type': 'application/json',
+    #         },
+    #         'body': body,
+    #     }
+    # }
     return client.create_task(
         tasks_v2.CreateTaskRequest(
             parent=client.queue_path(project, location, queue),
