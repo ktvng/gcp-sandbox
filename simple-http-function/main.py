@@ -35,7 +35,7 @@ def entry(request: Request):
     r = requests.post(url, json={"id": str(uuid.uuid4())}, headers={"Authorization": f"Bearer {token}"})
     print(r)
     # time.sleep(10)
-    return "success with v13\n"
+    return "success with v14\n"
 
 def get_access_token(url):
     request = google.auth.transport.requests.Request()

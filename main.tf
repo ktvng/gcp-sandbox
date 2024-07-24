@@ -116,6 +116,14 @@ resource "google_cloudfunctions2_function" "cloud-function" {
     service_account_email = google_service_account.function-account[each.key].email
   }
 }
+
+resource "google_project_iam_member" "service-account-users" {
+  for_each = var.funkets
+  project = var.project_id
+  role = "roles/iam.serviceAccountUser"
+  member = "serviceAccount:${google_service_account.function-account[each.key].email}"
+}
+
 resource "google_cloud_run_service_iam_member" "member" {
   location = google_cloudfunctions2_function.cloud-function["simple-http-function"].location
   service = google_cloudfunctions2_function.cloud-function["simple-http-function"].name

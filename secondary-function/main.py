@@ -5,7 +5,8 @@ def entry(request: Request):
     try:
         print(str(request.data))
         print(str(request.headers))
-        id = request.json['id']
+        body = request.get_json(force=True)
+        id = body['id']
         print(f"id: {id}")
     except:
         print('WARN: no id found')
