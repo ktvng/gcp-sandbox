@@ -3,10 +3,7 @@ def entry(request: Request):
     print(f"API VERSION 2")
 
     try:
-        print("#######################################")
-        print(str(request.data))
-        print(str(request.headers))
-        print("=======================================")
+        print(f'content-type: {str(request.headers.get("Content-Type", "None"))}')
         body = request.get_json(force=True)
         id = body['id']
         print(f"id: {id}")
