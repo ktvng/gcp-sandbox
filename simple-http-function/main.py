@@ -55,7 +55,7 @@ def queue_task(url):
                 service_account_email=service_account_email,
                 audience=url,
             ),
-            body='{"id": "1234"}',#json.dumps(body).encode(),
+            body=json.dumps(body).encode(),
             headers={"Content-Type": "application/json"}
         ),
     )
