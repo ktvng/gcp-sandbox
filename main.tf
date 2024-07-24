@@ -34,10 +34,22 @@ resource "google_storage_bucket" "bucket" {
 }
 
 // The shared build account
-resource "google_service_account" "build_account" {
+resource "google_service_account" "build-account" {
   account_id = "build-account"
   display_name = "build-account"
   description = "Cloudbuild account"
+}
+
+resource "google_project_iam_member" "build-account-permissions" {
+  project = var.project_id
+  member = "serviceAccount:${google_service_account.build-account.email}"
+  role = "roles/cloudfunctions.developer"
+}
+
+resource "google_project_iam_member" "build-account-logging" {
+  project = var.project_id
+  member = "serviceAccount:${google_service_account.build-account.email}"
+  role = "roles/logging.logWriter"
 }
 
 // All funkets

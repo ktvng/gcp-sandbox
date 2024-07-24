@@ -6,6 +6,7 @@ import google.auth.transport.requests
 import uuid
 from google.cloud import tasks_v2beta3 as tasks_v2
 import traceback
+import json
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
@@ -13,7 +14,7 @@ queue = "test-task-queue2"
 
 _request = google.auth.transport.requests.Request()
 _credentials = compute_engine.IDTokenCredentials(
-    request=_request, target_audience="www.google.com", use_metadata_identity_endpoint=True)
+    request=_request, target_audience="https://www.googleapis.com/auth/cloud-platform", use_metadata_identity_endpoint=True)
 service_account_email = _credentials.service_account_email
 
 @functions_framework.http
@@ -34,7 +35,7 @@ def entry(request: Request):
     r = requests.post(url, json={"id": str(uuid.uuid4())}, headers={"Authorization": f"Bearer {token}"})
     print(r)
     # time.sleep(10)
-    return "success with v8\n"
+    return "success with v13\n"
 
 def get_access_token(url):
     request = google.auth.transport.requests.Request()
@@ -42,24 +43,27 @@ def get_access_token(url):
         request=request, target_audience=url, use_metadata_identity_endpoint=True)
 
     credentials.refresh(request)
-    print("USING SERVICE ACCOUNT", credentials.service_account_email)
     return credentials.token
 
 def queue_task(url):
     client = tasks_v2.CloudTasksClient()
-    print(client._transport._credentials.service_account_email)
-    print(client._transport._credentials.account)
-    task = tasks_v2.Task(
-        http_request=tasks_v2.HttpRequest(
-            http_method=tasks_v2.HttpMethod.POST,
-            url=url,
-            oidc_token=tasks_v2.OidcToken(
-                service_account_email=service_account_email,
-                audience=url,
-            ),
-            body="hellos",
-        ),
-    )
+    print(f"client email {client._transport._credentials.service_account_email}")
+    print(f"client {client._transport._credentials}")
+    body = json.dumps({ "id": f"queue-{str(uuid.uuid4())}"})
+    task = {
+        'http_request': {
+            'http_method': tasks_v2.HttpMethod.POST,
+            'url': url,
+            'oidc_token': {
+                'service_account_email': service_account_email,
+                'audience': url,
+            },
+            'headers': {
+                'Content-Type': 'application/json',
+            },
+            'body': body,
+        }
+    }
     return client.create_task(
         tasks_v2.CreateTaskRequest(
             parent=client.queue_path(project, location, queue),
