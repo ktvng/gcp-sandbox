@@ -147,6 +147,10 @@ resource "google_cloud_tasks_queue" "function-queue" {
   location = var.location
   name = "${each.value.name}-queue-${random_id.differentiator.id}"
   project = var.project_id
+
+  rate_limits {
+    max_concurrent_dispatches = 2
+  }
 }
 
 resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
