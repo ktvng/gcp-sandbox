@@ -6,6 +6,7 @@ import google.auth.transport.requests
 import uuid
 from google.cloud import tasks_v2beta3 as tasks_v2
 import traceback
+import json
 
 project = "moonlit-web-429604-s7"
 location = "us-west1"
@@ -54,7 +55,7 @@ def queue_task(url):
                 service_account_email=service_account_email,
                 audience=url,
             ),
-            body=json.dumps(body).encode(),
+            body='{"id": "1234"}'#json.dumps(body).encode(),
             headers={"Content-Type": "application/json"}
         ),
     )
