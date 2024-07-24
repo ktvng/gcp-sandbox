@@ -55,24 +55,11 @@ def queue_task(url):
                 service_account_email=service_account_email,
                 audience=url,
             ),
-            body='{"id": "1234"}'#json.dumps(body).encode(),
+            body='{"id": "1234"}',#json.dumps(body).encode(),
             headers={"Content-Type": "application/json"}
         ),
     )
 
-    # body = { "id": f"queue-{str(uuid.uuid4())}"}
-    # task = tasks_v2.Task(
-    #     http_request=tasks_v2.HttpRequest(
-    #         http_method=tasks_v2.HttpMethod.POST,
-    #         url=url,
-    #         headers={"Content-type": "application/json"},
-    #         body=json.dumps(body).encode(),
-    #         oidc_token=tasks_v2.OidcToken(
-    #             service_account_email=service_account_email,
-    #             audience=url,
-    #         ),
-    #     ),
-    # )
     return client.create_task(
         tasks_v2.CreateTaskRequest(
             parent=client.queue_path(project, location, queue),
