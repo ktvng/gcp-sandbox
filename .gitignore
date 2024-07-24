@@ -2,3 +2,4 @@ builds/
 .terraform/
 .terraform.*
 terraform.*
+__pycache__/

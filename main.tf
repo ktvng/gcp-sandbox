@@ -60,9 +60,11 @@ variable "funkets" {
   default = {
     simple-http-function = {
       name = "simple-http-function"
+      entry = "simple_http_function"
     },
     secondary-function = {
       name = "secondary-function"
+      entry = "secondary_function"
     }
   }
 }
@@ -78,7 +80,7 @@ variable "routes" {
 data "archive_file" "local-code" {
   for_each = var.funkets
   type = "zip"
-  source_dir = "./${each.value.name}/"
+  source_dir = "./src/${each.value.name}/"
   output_path = "./builds/${each.value.name}.zip"
 }
 
@@ -102,7 +104,7 @@ resource "google_cloudfunctions2_function" "cloud-function" {
 
   build_config {
     runtime = "python312"
-    entry_point = "entry"
+    entry_point = each.value.entry
     source {
       storage_source {
         bucket = google_storage_bucket.bucket.name

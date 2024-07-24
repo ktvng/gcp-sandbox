@@ -52,9 +52,9 @@ class RemoteCall():
         return self._client.create_task(
             tasks_v2.CreateTaskRequest(
                 parent=self._client.queue_path(
-                    project=self.get_project_id(),
-                    location=self.get_location(),
-                    queue=self.get_service_queue()),
+                    project=self._get_project_id(),
+                    location=self._get_location(),
+                    queue=self._get_service_queue(service)),
                 task=task,
             )
         )
