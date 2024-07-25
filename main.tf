@@ -77,6 +77,32 @@ variable "routes" {
   }
 }
 
+
+################################################################################
+# VPC
+################################################################################
+resource "google_compute_network" "backend-vpc" {
+  name = "backend-vpc"
+  project = var.project_id
+  mtu = 1460
+  auto_create_subnetworks = false
+}
+
+resource "google_vpc_access_connector" "vpc-connector" {
+  name = "backend-vpc-connector"
+  network = google_compute_network.backend-vpc.name
+  ip_cidr_range = "10.1.0.0/28"
+  region = var.location
+  min_instances = 2
+  max_instances = 3
+  machine_type = "e2-micro"
+}
+
+
+################################################################################
+# Functions
+################################################################################
+
 data "archive_file" "local-code" {
   for_each = var.funkets
   type = "zip"
@@ -114,9 +140,11 @@ resource "google_cloudfunctions2_function" "cloud-function" {
   }
   service_config {
     timeout_seconds = 60
-    max_instance_count = 5
+    max_instance_count = 3
     min_instance_count = 0
     service_account_email = google_service_account.function-account[each.key].email
+    vpc_connector = google_vpc_access_connector.vpc-connector.name
+    ingress_settings = "ALLOW_INTERNAL_ONLY"
   }
 }
 

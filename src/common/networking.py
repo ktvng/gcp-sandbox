@@ -3,8 +3,37 @@ import uuid
 import google.auth.transport.requests
 import google.auth.compute_engine
 from google.cloud import tasks_v2
+import flask
+import jwt
 
-class RemoteCall():
+def log_details(request: flask.Request):
+    try:
+        body = request.get_json(force=True)
+        try:
+            id = body['id']
+        except:
+            id = 'N/A'
+
+        auth_type = 'Unknown'
+        email = 'N/A'
+        try:
+            auth = request.headers.get("Authorization", "")
+            parts = auth.split(' ')
+            auth_type = parts[0].strip()
+            token = parts[1].strip()
+            token = jwt.decode(token, options={"verify_signature": False})
+            email = token['email']
+        except:
+            pass
+
+        print(f"INFO {id} auth by {auth_type}: {email}")
+        print(f"INFO request-body: {body}")
+
+    except Exception as e:
+        print(f"WARN could not log request details due to '{e}'")
+
+
+class RemoteProcedure():
     def __init__(self, service_config_path: str) -> None:
         with open(service_config_path, 'r') as f:
             self._service_config = json.load(f)["service-config"]["value"]
