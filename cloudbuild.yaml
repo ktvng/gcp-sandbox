@@ -1,15 +1,15 @@
 steps:
 - id: 'deploy-simple-http-function'
   name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  args: ['gcloud', 'functions', 'deploy', 'simple-http-function', '--gen2', '--trigger-http', '--source=./src/', '--runtime=python312', 'region=us-west1']
+  args: ['gcloud', 'functions', 'deploy', 'simple-http-function', '--gen2', '--trigger-http', '--source=./src/', '--runtime=python312', '--region=us-west1']
   waitFor: ['-']
 - id: 'deploy-secondary-function'
   name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  args: ['gcloud', 'functions', 'deploy', 'secondary-function', '--gen2', '--trigger-http', '--source=./src/', '--runtime=python312', 'region=us-west1']
+  args: ['gcloud', 'functions', 'deploy', 'secondary-function', '--gen2', '--trigger-http', '--source=./src/', '--runtime=python312', '--region=us-west1']
   waitFor: ['-']
 - id: 'deploy-autoscaler'
   name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  args: ['gcloud', 'functions', 'deploy', 'autoscaler', '--gen2', '--trigger-http', '--source=./src/', '--runtime=python312', 'region=us-west1']
+  args: ['gcloud', 'functions', 'deploy', 'autoscaler', '--gen2', '--trigger-http', '--source=./src/', '--runtime=python312', '--region=us-west1']
   waitFor: ['-']
 options:
   logging: CLOUD_LOGGING_ONLY
