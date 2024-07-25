@@ -21,6 +21,7 @@ def entry(request: Request):
 
     new_max_instances = math.floor(max_instances * scale_factor)
     new_max_instances = min(30, new_max_instances)
+    new_max_instances = max(2, new_max_instances)
 
     orig.service_config.max_instance_count = new_max_instances
     print(f"Updating max instances from {max_instances} to {new_max_instances}")
