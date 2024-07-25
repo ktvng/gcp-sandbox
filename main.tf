@@ -141,13 +141,13 @@ resource "google_project_iam_member" "autoscale-logging" {
 
 resource "google_project_iam_member" "autoscale-view-queue" {
   project = var.project_id
-  member = "serviceAccount:${google_service_account.autoscale-schedule-account.email}"
+  member = "serviceAccount:${google_service_account.function-account["autoscaler"].email}"
   role = "roles/cloudtasks.viewer"
 }
 
 resource "google_project_iam_member" "autoscale-update-function" {
   project = var.project_id
-  member = "serviceAccount:${google_service_account.autoscale-schedule-account.email}"
+  member = "serviceAccount:${google_service_account.function-account["autoscaler"].email}"
   role = "roles/cloudfunctions.developer"
 }
 

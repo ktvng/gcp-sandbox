@@ -21,7 +21,7 @@ def entry(request: Request):
         request=_request,
         target_audience="https://www.googleapis.com/auth/cloud-platform",
         use_metadata_identity_endpoint=True)
-    client = cloud_functions.FunctionServiceClient(credentials=_credentials)
+    client = cloud_functions.FunctionServiceClient()
     request = cloud_functions.GetFunctionRequest(name=service)
     orig = client.get_function(request)
     max_instances = orig.service_config.max_instance_count
