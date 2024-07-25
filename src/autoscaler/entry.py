@@ -1,7 +1,9 @@
 from flask import Request
+import google.auth.credentials
 import common.networking
 import google.cloud.functions_v2 as cloud_functions
 import math
+import google.auth
 
 def entry(request: Request):
     print("AUTOSCALER V1")
@@ -14,7 +16,12 @@ def entry(request: Request):
     if queue.stats.tasks_count > 100:
         scale_factor = 2
 
-    client = cloud_functions.FunctionServiceClient()
+    _request = google.auth.transport.requests.Request()
+    _credentials = google.auth.compute_engine.IDTokenCredentials(
+        request=_request,
+        target_audience="https://www.googleapis.com/auth/cloud-platform",
+        use_metadata_identity_endpoint=True)
+    client = cloud_functions.FunctionServiceClient(credentials=_credentials)
     request = cloud_functions.GetFunctionRequest(name=service)
     orig = client.get_function(request)
     max_instances = orig.service_config.max_instance_count

@@ -139,8 +139,17 @@ resource "google_project_iam_member" "autoscale-logging" {
   role = "roles/logging.logWriter"
 }
 
+resource "google_project_iam_member" "autoscale-view-queue" {
+  project = var.project_id
+  member = "serviceAccount:${google_service_account.autoscale-schedule-account.email}"
+  role = "roles/cloudtasks.viewer"
+}
 
-
+resource "google_project_iam_member" "autoscale-update-function" {
+  project = var.project_id
+  member = "serviceAccount:${google_service_account.autoscale-schedule-account.email}"
+  role = "roles/cloudfunctions.developer"
+}
 
 
 ################################################################################
@@ -191,7 +200,7 @@ resource "google_cloudfunctions2_function" "cloud-function" {
     ingress_settings = try(each.value["public"], false) ? "ALLOW_ALL" : "ALLOW_INTERNAL_ONLY"
     vpc_connector_egress_settings = "ALL_TRAFFIC"
     # available_cpu = "1"
-    available_memory = "128Mi"
+    available_memory = "256Mi"
     # max_instance_request_concurrency = 16
   }
 }
