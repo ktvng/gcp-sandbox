@@ -21,6 +21,11 @@ variable "location" {
   default = "us-west1"
 }
 
+variable "autoscaler" {
+  type = string
+  default = "autoscaler"
+}
+
 provider "google" {
   project = var.project_id
 }
@@ -66,6 +71,10 @@ variable "funkets" {
     secondary-function = {
       name = "secondary-function"
       entry = "secondary_function"
+    },
+    autoscaler = {
+      name = "autoscaler"
+      entry = "autoscaler"
     }
   }
 }
@@ -107,7 +116,7 @@ resource "google_vpc_access_connector" "vpc-connector" {
 data "archive_file" "local-code" {
   for_each = var.funkets
   type = "zip"
-  source_dir = "./src/${each.value.name}/"
+  source_dir = "./src/"
   output_path = "./builds/${each.value.name}.zip"
 }
 
@@ -168,6 +177,14 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   for_each = var.routes
   location = google_cloudfunctions2_function.cloud-function[each.value].location
   service  = google_cloudfunctions2_function.cloud-function[each.value].name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
+}
+
+resource "google_cloud_run_service_iam_member" "autoscale-invoker" {
+  for_each = var.routes
+  location = google_cloudfunctions2_function.cloud-function[var.autoscaler].location
+  service  = google_cloudfunctions2_function.cloud-function[var.autoscaler].name
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }

@@ -59,8 +59,18 @@ class RemoteProcedure():
     def _get_project_id(self) -> str:
         return self._service_config["project-id"]
 
-
     def queue_task(self, service: str, body: dict):
+        self._queue_task(service, body)
+
+        # also send to autoscaler
+        autoscaler_payload = {
+            "id": str(uuid.uuid4()),
+            "service": service
+        }
+
+        self._queue_task("autoscaler", autoscaler_payload)
+
+    def _queue_task(self, service: str, body: dict):
         if body.get('id') is None:
             body['id'] = str(uuid.uuid4())
 

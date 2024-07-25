@@ -19,5 +19,15 @@ steps:
   - --source=./src/
   - --trigger-http
   - --runtime=python312
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - autoscaler
+  - --region=us-west1
+  - --source=./src/
+  - --trigger-http
+  - --runtime=python312
 options:
   logging: CLOUD_LOGGING_ONLY
