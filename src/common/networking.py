@@ -2,9 +2,12 @@ import json
 import uuid
 import google.auth.transport.requests
 import google.auth.compute_engine
-from google.cloud import tasks_v2
+from google.cloud import tasks_v2beta3 as tasks_v2
 import flask
+import google.cloud.tasks_v2beta3
 import jwt
+
+import google.cloud
 
 def log_details(request: flask.Request):
     try:
@@ -59,6 +62,15 @@ class RemoteProcedure():
     def _get_project_id(self) -> str:
         return self._service_config["project-id"]
 
+    def _get_queue_path(self, service: str) -> str:
+        return self._client.queue_path(
+            project=self._get_project_id(),
+            location=self._get_location(),
+            queue=self._get_service_queue(service))
+
+    def get_queue_details(self, service: str) -> google.cloud.tasks_v2beta3.Queue:
+        return self._client.get_queue(name=self._get_queue_path(service))
+
     def queue_task(self, service: str, body: dict):
         self._queue_task(service, body)
 
@@ -90,10 +102,7 @@ class RemoteProcedure():
 
         return self._client.create_task(
             tasks_v2.CreateTaskRequest(
-                parent=self._client.queue_path(
-                    project=self._get_project_id(),
-                    location=self._get_location(),
-                    queue=self._get_service_queue(service)),
+                parent=self._get_queue_path(service),
                 task=task,
             )
         )

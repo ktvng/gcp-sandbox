@@ -10,7 +10,7 @@ remote = common.networking.RemoteProcedure("./service-config.json")
 def entry(request: Request):
     common.networking.log_details(request)
 
-    for i in range(3):
+    for i in range(10):
         remote.queue_task("secondary-function", body={
             "part": f"{i}"
         })

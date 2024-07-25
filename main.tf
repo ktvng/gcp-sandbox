@@ -208,6 +208,14 @@ resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
   member = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
+resource "google_cloud_tasks_queue_iam_member" "autoscale-enqueuer" {
+  for_each = var.routes
+  location = google_cloudfunctions2_function.cloud-function[var.autoscaler].location
+  name = google_cloud_tasks_queue.function-queue[var.autoscaler].name
+  role = "roles/cloudtasks.enqueuer"
+  member = "serviceAccount:${google_service_account.function-account[each.key].email}"
+}
+
 output "service-config" {
   value = {
     project-id = var.project_id
