@@ -8,6 +8,7 @@
         "functions": [
           "object",
           {
+            "autoscaler": "string",
             "secondary-function": "string",
             "simple-http-function": "string"
           }
@@ -17,6 +18,7 @@
         "queues": [
           "object",
           {
+            "autoscaler": "string",
             "secondary-function": "string",
             "simple-http-function": "string"
           }
@@ -26,12 +28,14 @@
     "value": {
       "deployment-hash": "zP296pb9dKc",
       "functions": {
+        "autoscaler": "https://autoscaler-tidc3mgixq-uw.a.run.app",
         "secondary-function": "https://secondary-function-tidc3mgixq-uw.a.run.app",
         "simple-http-function": "https://simple-http-function-tidc3mgixq-uw.a.run.app"
       },
       "location": "us-west1",
       "project-id": "moonlit-web-429604-s7",
       "queues": {
+        "autoscaler": "autoscaler-queue-zP296pb9dKc",
         "secondary-function": "secondary-function-queue-zP296pb9dKc",
         "simple-http-function": "simple-http-function-queue-zP296pb9dKc"
       }
