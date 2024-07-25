@@ -21,11 +21,6 @@ variable "location" {
   default = "us-west1"
 }
 
-variable "autoscaler" {
-  type = string
-  default = "autoscaler"
-}
-
 provider "google" {
   project = var.project_id
 }
@@ -108,6 +103,45 @@ resource "google_vpc_access_connector" "vpc-connector" {
   machine_type = "e2-micro"
 }
 
+################################################################################
+# Autoscaler
+################################################################################
+resource "google_cloud_scheduler_job" "autoscaler-schedule" {
+  name = "autoscaler-schedule"
+  schedule = "*/2 * * * *"
+  region = var.location
+
+  http_target {
+    http_method = "GET"
+    uri = google_cloudfunctions2_function.cloud-function["autoscaler"].service_config[0].uri
+
+    oidc_token {
+      service_account_email = google_service_account.autoscale-schedule-account.email
+    }
+  }
+}
+
+resource "google_service_account" "autoscale-schedule-account" {
+  account_id = "autoscaler-schedule-account"
+  display_name = "autoscale-schedule-account"
+}
+
+resource "google_cloud_run_service_iam_member" "autoscale-invoker" {
+  location = google_cloudfunctions2_function.cloud-function["autoscaler"].location
+  service  = google_cloudfunctions2_function.cloud-function["autoscaler"].name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.autoscale-schedule-account.email}"
+}
+
+resource "google_project_iam_member" "autoscale-logging" {
+  project = var.project_id
+  member = "serviceAccount:${google_service_account.autoscale-schedule-account.email}"
+  role = "roles/logging.logWriter"
+}
+
+
+
+
 
 ################################################################################
 # Functions
@@ -150,12 +184,15 @@ resource "google_cloudfunctions2_function" "cloud-function" {
   }
   service_config {
     timeout_seconds = 60
-    max_instance_count = 3
+    max_instance_count = 2
     min_instance_count = 0
     service_account_email = google_service_account.function-account[each.key].email
     vpc_connector = google_vpc_access_connector.vpc-connector.name
     ingress_settings = try(each.value["public"], false) ? "ALLOW_ALL" : "ALLOW_INTERNAL_ONLY"
     vpc_connector_egress_settings = "ALL_TRAFFIC"
+    # available_cpu = "1"
+    available_memory = "128Mi"
+    # max_instance_request_concurrency = 16
   }
 }
 
@@ -181,14 +218,6 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
 
-resource "google_cloud_run_service_iam_member" "autoscale-invoker" {
-  for_each = var.routes
-  location = google_cloudfunctions2_function.cloud-function[var.autoscaler].location
-  service  = google_cloudfunctions2_function.cloud-function[var.autoscaler].name
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.function-account[each.key].email}"
-}
-
 resource "google_cloud_tasks_queue" "function-queue" {
   for_each = var.funkets
   location = var.location
@@ -196,7 +225,8 @@ resource "google_cloud_tasks_queue" "function-queue" {
   project = var.project_id
 
   rate_limits {
-    max_concurrent_dispatches = 2
+    max_concurrent_dispatches = 100
+    max_dispatches_per_second = 400
   }
 }
 
@@ -204,14 +234,6 @@ resource "google_cloud_tasks_queue_iam_member" "enqueuer" {
   for_each = var.routes
   location = google_cloudfunctions2_function.cloud-function[each.key].location
   name = google_cloud_tasks_queue.function-queue[each.value].name
-  role = "roles/cloudtasks.enqueuer"
-  member = "serviceAccount:${google_service_account.function-account[each.key].email}"
-}
-
-resource "google_cloud_tasks_queue_iam_member" "autoscale-enqueuer" {
-  for_each = var.routes
-  location = google_cloudfunctions2_function.cloud-function[var.autoscaler].location
-  name = google_cloud_tasks_queue.function-queue[var.autoscaler].name
   role = "roles/cloudtasks.enqueuer"
   member = "serviceAccount:${google_service_account.function-account[each.key].email}"
 }
