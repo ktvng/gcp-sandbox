@@ -61,6 +61,7 @@ variable "funkets" {
     simple-http-function = {
       name = "simple-http-function"
       entry = "simple_http_function"
+      public = true
     },
     secondary-function = {
       name = "secondary-function"
@@ -144,7 +145,8 @@ resource "google_cloudfunctions2_function" "cloud-function" {
     min_instance_count = 0
     service_account_email = google_service_account.function-account[each.key].email
     vpc_connector = google_vpc_access_connector.vpc-connector.name
-    ingress_settings = "ALLOW_INTERNAL_ONLY"
+    ingress_settings = try(each.value["public"], false) ? "ALLOW_ALL" : "ALLOW_INTERNAL_ONLY"
+    vpc_connector_egress_settings = "ALL_TRAFFIC"
   }
 }
 

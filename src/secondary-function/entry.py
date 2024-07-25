@@ -1,14 +1,10 @@
 from flask import Request
 import json
 import time
+import common.networking
 
 def entry(request: Request):
-    print(f"API VERSION 2")
-    try:
-        print(f'content-type: {str(request.headers.get("Content-Type", "None"))}')
-        body = request.get_json(force=True)
-        print(json.dumps(body, indent=2))
-    except:
-        print('WARN: could not decode json body')
+    print(f"API VERSION 3")
+    common.networking.log_details(request)
     time.sleep(20)
     return "OK"

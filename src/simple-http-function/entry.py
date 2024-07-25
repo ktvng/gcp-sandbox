@@ -4,16 +4,18 @@ from google.auth import compute_engine
 import google.auth.transport.requests
 import common.networking
 
+remote = common.networking.RemoteProcedure("./service-config.json")
+
 @functions_framework.http
 def entry(request: Request):
     common.networking.log_details(request)
 
-    caller = common.networking.RemoteProcedure("./service-config.json")
-    caller.queue_task("secondary-function", body={
-        "name": "hello there"
-    })
+    for i in range(3):
+        remote.queue_task("secondary-function", body={
+            "part": f"{i}"
+        })
 
-    return "success with v18\n"
+    return "API v19\n"
 
 def get_access_token(url):
     request = google.auth.transport.requests.Request()
