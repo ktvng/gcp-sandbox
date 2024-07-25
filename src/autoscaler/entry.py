@@ -16,12 +16,8 @@ def entry(request: Request):
     if queue.stats.tasks_count > 100:
         scale_factor = 2
 
-    _request = google.auth.transport.requests.Request()
-    _credentials = google.auth.compute_engine.IDTokenCredentials(
-        request=_request,
-        target_audience="https://www.googleapis.com/auth/cloud-platform",
-        use_metadata_identity_endpoint=True)
-    client = cloud_functions.FunctionServiceClient()
+    credentials = google.auth.default()
+    client = cloud_functions.FunctionServiceClient(credentials=credentials)
     request = cloud_functions.GetFunctionRequest(name=service)
     orig = client.get_function(request)
     max_instances = orig.service_config.max_instance_count
