@@ -13,6 +13,7 @@ def entry(request: Request):
     service = "secondary-function"
     remote = common.networking.RemoteProcedure("./service-config.json")
     queue = remote.get_queue_details(service)
+    print(f"queue is {queue.name}")
     scale_factor = .8
     print(f"items in queue {queue.stats.tasks_count}")
     if queue.stats.tasks_count > 100:
