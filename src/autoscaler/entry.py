@@ -16,7 +16,8 @@ def entry(request: Request):
     if queue.stats.tasks_count > 100:
         scale_factor = 2
 
-    credentials = google.auth.default()
+    credentials, proj_id = google.auth.default()
+    print(f"using credentials{credentials}")
     client = cloud_functions.FunctionServiceClient(credentials=credentials)
     request = cloud_functions.GetFunctionRequest(name=service)
     orig = client.get_function(request)
