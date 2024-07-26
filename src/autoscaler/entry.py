@@ -1,4 +1,5 @@
 from flask import Request
+import google.auth.compute_engine
 import google.auth.credentials
 import common.networking
 import google.cloud.functions_v2 as cloud_functions
@@ -17,7 +18,8 @@ def entry(request: Request):
         scale_factor = 2
 
     credentials, proj_id = google.auth.default()
-    print(f"using credentials{credentials}")
+    credentials: google.auth.compute_engine.Credentials = credentials
+    print(f"using credentials '{credentials.service_account_email}' scope {credentials.scopes}")
     client = cloud_functions.FunctionServiceClient(credentials=credentials)
     request = cloud_functions.GetFunctionRequest(name=service)
     orig = client.get_function(request)
