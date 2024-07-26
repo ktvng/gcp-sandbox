@@ -24,6 +24,7 @@ def entry(request: Request):
     r = cloud_functions.GetFunctionRequest(name=client.function_path(
         proj_id, "us-west1", service
     ))
+
     orig = client.get_function(r)
     max_instances = orig.service_config.max_instance_count
 
@@ -33,7 +34,12 @@ def entry(request: Request):
 
     orig.service_config.max_instance_count = new_max_instances
     print(f"Updating max instances from {max_instances} to {new_max_instances}")
-    r = cloud_functions.UpdateFunctionRequest(function=orig)
-    client.update_function(r)
+    try:
+        r = cloud_functions.UpdateFunctionRequest(function=orig)
+        result = client.update_function(r)
+        print(f"Update success! {result}")
+    except Exception as e:
+        print(f"WARN failed to update function due to {e}")
+
 
     return "OK"
