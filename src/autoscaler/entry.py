@@ -22,6 +22,8 @@ def entry(request: Request):
     print(f"using credentials '{credentials.service_account_email}' scope {credentials.scopes}")
     client = cloud_functions.FunctionServiceClient(credentials=credentials)
     request = cloud_functions.GetFunctionRequest(name=service)
+    print(f"request headers '{request.headers}'")
+    print(f"request auth '{request.authorization}'")
     orig = client.get_function(request)
     max_instances = orig.service_config.max_instance_count
 
