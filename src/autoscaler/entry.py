@@ -21,7 +21,9 @@ def entry(request: Request):
     credentials: google.auth.compute_engine.Credentials = credentials
     print(f"using credentials '{credentials.service_account_email}' scope {credentials.scopes}")
     client = cloud_functions.FunctionServiceClient(credentials=credentials)
-    r = cloud_functions.GetFunctionRequest(name=service)
+    r = cloud_functions.GetFunctionRequest(name=client.function_path(
+        proj_id, "us-west1", service
+    ))
     orig = client.get_function(r)
     max_instances = orig.service_config.max_instance_count
 
@@ -31,7 +33,7 @@ def entry(request: Request):
 
     orig.service_config.max_instance_count = new_max_instances
     print(f"Updating max instances from {max_instances} to {new_max_instances}")
-    request = cloud_functions.UpdateFunctionRequest(function=orig)
-    client.update_function()
+    r = cloud_functions.UpdateFunctionRequest(function=orig)
+    client.update_function(r)
 
     return "OK"
