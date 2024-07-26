@@ -15,11 +15,9 @@ def entry(request: Request):
     queue = remote.get_queue_details(service)
     scale_factor = .8
     if queue.stats.tasks_count > 100:
-        scale_factor = 2
+        scale_factor = 3
 
     credentials, proj_id = google.auth.default()
-    credentials: google.auth.compute_engine.Credentials = credentials
-    print(f"using credentials '{credentials.service_account_email}' scope {credentials.scopes}")
     client = cloud_functions.FunctionServiceClient(credentials=credentials)
     r = cloud_functions.GetFunctionRequest(name=client.function_path(
         proj_id, "us-west1", service
@@ -27,6 +25,7 @@ def entry(request: Request):
 
     orig = client.get_function(r)
     max_instances = orig.service_config.max_instance_count
+    print(f"max instances {max_instances} and scale factor {scale_factor}")
 
     new_max_instances = math.floor(max_instances * scale_factor)
     new_max_instances = min(30, new_max_instances)
