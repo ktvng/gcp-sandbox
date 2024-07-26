@@ -151,13 +151,6 @@ resource "google_project_iam_member" "autoscale-update-function" {
   role = "roles/cloudfunctions.developer"
 }
 
-# resource "google_project_iam_member" "autoscale-test" {
-#   project = var.project_id
-#   member = "serviceAccount:${google_service_account.function-account["autoscaler"].email}"
-#   role = "roles/iam.serviceAccountTokenCreator"
-# }
-
-
 ################################################################################
 # Functions
 ################################################################################

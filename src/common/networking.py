@@ -75,12 +75,12 @@ class RemoteProcedure():
         self._queue_task(service, body)
 
         # also send to autoscaler
-        autoscaler_payload = {
-            "id": str(uuid.uuid4()),
-            "service": service
-        }
+        # autoscaler_payload = {
+        #     "id": str(uuid.uuid4()),
+        #     "service": service
+        # }
 
-        self._queue_task("autoscaler", autoscaler_payload)
+        # self._queue_task("autoscaler", autoscaler_payload)
 
     def _queue_task(self, service: str, body: dict):
         if body.get('id') is None:
