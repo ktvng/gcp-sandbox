@@ -34,13 +34,16 @@ def entry(request: Request):
     new_max_instances = max(2, new_max_instances)
 
     orig.service_config.max_instance_count = new_max_instances
-    print(f"Updating max instances from {max_instances} to {new_max_instances}")
-    try:
-        r = cloud_functions.UpdateFunctionRequest(function=orig)
-        result = client.update_function(r)
-        print(f"Update success! {result}")
-    except Exception as e:
-        print(f"WARN failed to update function due to {e}")
+    if new_max_instances != max_instances:
+        print(f"Updating max instances from {max_instances} to {new_max_instances}")
+        try:
+            r = cloud_functions.UpdateFunctionRequest(function=orig)
+            result = client.update_function(r)
+            print(f"Update success! {result}")
+        except Exception as e:
+            print(f"WARN failed to update function due to {e}")
+    else:
+        print("INFO no update needed")
 
 
     return "OK"
